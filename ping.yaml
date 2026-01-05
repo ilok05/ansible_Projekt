@@ -9,4 +9,4 @@
   gather_facts: false
   tasks:
   - name: robimy ping na WINSRV
-    action: win_ping
+    win_ping:
