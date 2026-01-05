@@ -6,6 +6,7 @@
     action: ping
 
 - hosts: WINSRV_Ilski_P
+  gather_facts: no
   tasks:
   - name: robimy ping na WINSRV
     action: win_ping
