@@ -5,7 +5,9 @@
   - name: robimy ping na AGH
     action: ping
 
-- hosts: WINSRV_Ilski_P
+- name: Test connectivity with Windows hosts over SSH
+  hosts: WINSRV_Ilski_P
+  gather_facts: no
   tasks:
-  - name: robimy ping na WINSRV
-    win_ping:
+  - name: Ping Windows host
+      win_ping:
