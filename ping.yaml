@@ -1,15 +1,21 @@
 --- # moj pierwszy playbook
 
-- hosts: AGH_Ilski
+
+- name: linux
+  hosts: AGH_Ilski
   tasks:
   - name: robimy ping na AGH
     action: ping
 
-- hosts: WINSRV_Ilski_P
-  gather_facts: no
+- name: win test powershell
+  gather_facts: yes
+  hosts: WINSRV_Ilski_P
   tasks:
-  - name: Ping Windows host
-    become: yes
-    become_method: runas
-    become_user: Administrator
-    win_ping:
+  - name: test powershell
+    win_shell: |
+              Get-NetIPAddress
+    register: wynik_powershell_test
+
+  - name: pokaz wynik polecenia powershell
+    debug:
+      var: wynik_powershell_test
