@@ -9,5 +9,9 @@
   hosts: WINSRV_Ilski_P
   gather_facts: no
   tasks:
+  - name: Set env vars for SSH
+    ansible.builtin.set_env:
+      PATH: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0;{{ ansible_env.PATH }}"
+      ComSpec: "C:\\Windows\\System32\\cmd.exe"
   - name: Ping Windows host
     win_ping:
