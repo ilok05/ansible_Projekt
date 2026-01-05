@@ -1,0 +1,6 @@
+--- # moj pierwszy playbook
+
+- hosts: AGH_Ilski
+  tasks:
+  - name: robimy ping na AGH
+    action: ping
