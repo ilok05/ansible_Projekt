@@ -6,7 +6,6 @@
     action: ping
 
 - hosts: WINSRV_Ilski_P
-  become: true
   gather_facts: no
   tasks:
   - name: Ping Windows host
