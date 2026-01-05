@@ -5,8 +5,7 @@
   - name: robimy ping na AGH
     action: ping
 
-- name: Test connectivity with Windows hosts over SSH
-  hosts: WINSRV_Ilski_P
+- hosts: WINSRV_Ilski_P
   gather_facts: no
   tasks:
   - name: Set env vars for SSH
