@@ -6,9 +6,8 @@
     action: ping
 
 - hosts: WINSRV_Ilski_P
+  become: true
   gather_facts: no
   tasks:
-  - name: Set env vars for SSH
-    ansible.builtin.set_env: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
   - name: Ping Windows host
     win_ping:
