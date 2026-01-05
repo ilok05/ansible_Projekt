@@ -10,4 +10,7 @@
   gather_facts: no
   tasks:
   - name: Ping Windows host
+    become: yes
+    become_method: runas
+    become_user: Administrator
     win_ping:
