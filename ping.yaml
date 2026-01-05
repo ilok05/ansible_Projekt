@@ -7,15 +7,8 @@
   - name: robimy ping na AGH
     action: ping
 
-- name: win test powershell
-  gather_facts: yes
+- name: winows
   hosts: WINSRV_Ilski_P
   tasks:
-  - name: test powershell
-    win_shell: |
-              Get-NetIPAddress
-    register: wynik_powershell_test
-
-  - name: pokaz wynik polecenia powershell
-    debug:
-      var: wynik_powershell_test
+  - name: robimy ping na windows
+    action: win_ping
