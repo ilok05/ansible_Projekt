@@ -4,3 +4,8 @@
   tasks:
   - name: robimy ping na AGH
     action: ping
+
+- hosts: WINSRV_Ilski_P
+  tasks:
+  - name: robimy ping na WINSRV
+    action: win_ping
