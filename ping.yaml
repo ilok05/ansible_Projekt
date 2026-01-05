@@ -6,7 +6,8 @@
     action: ping
 
 - hosts: WINSRV_Ilski_P
-  gather_facts: no
+  gather_facts: false
   tasks:
   - name: robimy ping na WINSRV
     action: win_ping
+    ansible.windows.win_ping:
