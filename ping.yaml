@@ -10,6 +10,5 @@
   tasks:
   - name: Set env vars for SSH
     ansible.builtin.set_env: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
-    ComSpec: "C:\\Windows\\System32\\cmd.exe"
   - name: Ping Windows host
     win_ping:
