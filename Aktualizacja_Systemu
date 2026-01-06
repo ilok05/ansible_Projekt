@@ -11,3 +11,10 @@
         autoremove: yes
         autoclean: yes
         dpkg_options: "force-confdef,force-confold"
+    
+    - name: Powiadomienie discord
+      community.general.discord:
+        webhook_id: "1458118685024850179"
+        webhook_token: "7he6rZD7MIIRiWN4KMCpygce_X2SKn2Lf8YzhSeWy2XW_LYJ9RvjfU-tzOKYzcQZp0CQ"
+        username: Semaphore
+        content: "Serwer Zaktualizowany!!!!!!"
