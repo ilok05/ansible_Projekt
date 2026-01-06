@@ -7,10 +7,6 @@
   tasks:
     - name: Aktualizacja Systemu
       block:
-
-        - name: Wymuszenie błędu
-          ansible.builtin.fail:
-            msg: "Test Błędu"
   
         - name: Wykonanie bezpiecznej aktualizacji wszystkich pakietów
           ansible.builtin.apt:
