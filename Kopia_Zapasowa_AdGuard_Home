@@ -1,3 +1,4 @@
+---
 - name: Kopia zapasowa AdGuard Home
   hosts: AGH_Ilski
   become: yes
@@ -101,7 +102,7 @@
             content: "Błąd podczas tworzenia kopii!!!!"
 
 
----
+
 - name: Przywracanie AdGuard Home z kopii zapasowej
   hosts: Debian_Ilski
   become: yes
