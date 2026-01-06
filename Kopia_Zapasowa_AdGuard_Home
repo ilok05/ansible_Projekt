@@ -110,7 +110,7 @@
     adguard_service_name: adguardhome
 
   tasks:
-    - name: Przywracanie kopii:  
+    - name: Przywracanie kopii
       block:
 
         - name: Utworzenie katalogu tymczasowego
