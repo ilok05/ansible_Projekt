@@ -112,7 +112,7 @@
 
   tasks:
     - name: Pobranie kopii zapasowej z hosta źródłowego
-      synchronize:
+      ansible.builtin.copy:
         src: "{{ backup_root_dir }}/{{ backup_file }}"
         dest: "{{ backup_root_dir }}/"
         remote_src: yes 
