@@ -11,8 +11,7 @@
 
     backup_root_dir: /var/backups/adguardhome
     backup_timestamp: "{{ ansible_date_time.iso8601_basic }}"
-    backup_file: "adguardhome-backup-{{ inventory_hostname }}-{{ backup_timestamp }}.tar.gz"
-
+    backup_file: "adguardhome-latest.tar.gz"
   tasks:
     - name: Kopia_Zapasowa_AdGuardHome
       block:
@@ -125,7 +124,7 @@
 
         - name: Skopiowanie backupu z serwera źródłowego
           ansible.builtin.fetch:
-            src: "{{ hostvars['AGH_Ilski'].adguard_backup_path }}"
+            src: "/var/backups/adguardhome/adguardhome-latest.tar.gz"
             dest: /tmp/adguard_restore/
             flat: yes
           delegate_to: AGH_Ilski
