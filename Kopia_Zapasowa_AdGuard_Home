@@ -112,12 +112,12 @@
 
   tasks:
     - name: Pobranie kopii zapasowej z hosta źródłowego
-      ansible.builtin.copy:
+      synchronize:
         src: "{{ backup_root_dir }}/{{ backup_file }}"
         dest: "{{ backup_root_dir }}/"
-        remote_src: yes
-      delegate_to: "{{ source_host }}"
-      become: yes
+        owner: root
+        group: root
+        mode: "0644" 
 
     - name: Blok przywracania AdGuard Home
       block:
