@@ -123,21 +123,21 @@
             mode: "0755"
 
         - name: Skopiowanie backupu z serwera źródłowego
-          ansible.builtin.fetch:
+          ansible.builtin.copy:
             src: "/var/backups/adguardhome/adguardhome-latest.tar.gz"
-            dest: /tmp/adguard_restore/
-            flat: yes
+            dest: /tmp/adguardhome-latest.tar.gz
+            mode: "0600"
           delegate_to: AGH_Ilski
 
         - name: Zatrzymanie AdGuard Home na serwerze docelowym
           ansible.builtin.service:
-            name: "{{ adguard_service_name }}"
+            name: adguardhome
             state: stopped
           failed_when: false
 
         - name: Przywrócenie danych z backupu
           ansible.builtin.unarchive:
-            src: "/tmp/adguard_restore/{{ hostvars[groups['adguard_source'][0]].backup_file | default(lookup('fileglob','/tmp/adguard_restore/*.tar.gz')) }}"
+            src: /tmp/adguardhome-latest.tar.gz
             dest: /
             remote_src: yes
 
