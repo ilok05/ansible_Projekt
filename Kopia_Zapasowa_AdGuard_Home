@@ -47,6 +47,10 @@
           ansible.builtin.set_fact:
             adguard_backup_path: "{{ backup_root_dir }}/{{ backup_file }}"
 
+        - name: Zapamiętanie hosta źródłowego
+          ansible.builtin.set_fact:
+            adguard_source_host: "{{ inventory_hostname }}"     
+
         - name: Informacja o zakończeniu backupu
           ansible.builtin.debug:
             msg: |
@@ -121,10 +125,10 @@
 
         - name: Skopiowanie backupu z serwera źródłowego
           ansible.builtin.fetch:
-            src: "{{ hostvars[groups['adguard_source'][0]].adguard_backup_path }}"
+            src: "{{ hostvars['AGH_Ilski'].adguard_backup_path }}"
             dest: /tmp/adguard_restore/
             flat: yes
-          delegate_to: "{{ groups['adguard_source'][0] }}"
+          delegate_to: AGH_Ilski
 
         - name: Zatrzymanie AdGuard Home na serwerze docelowym
           ansible.builtin.service:
