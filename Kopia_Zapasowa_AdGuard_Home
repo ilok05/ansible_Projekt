@@ -17,7 +17,7 @@
 
     - name: Zatrzymanie usługi AdGuard Home
       ansible.builtin.service:
-        name: AdGuardHome
+        name: adguardhome
         state: stopped
 
     - name: Utworzenie katalogu na kopie zapasowe
@@ -49,3 +49,4 @@
         msg: |
           Backup AdGuard Home zakończony sukcesem
           Plik: {{ backup_root_dir }}/{{ backup_file }}
+
