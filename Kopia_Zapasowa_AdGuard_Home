@@ -14,38 +14,90 @@
     backup_file: "adguardhome-backup-{{ inventory_hostname }}-{{ backup_timestamp }}.tar.gz"
 
   tasks:
+    - name: Kopia_Zapasowa_AdGuardHome
+      block:
 
-    - name: Zatrzymanie usługi AdGuard Home
-      ansible.builtin.service:
-        name: adguardhome
-        state: stopped
+        - name: Wymuszenie bŁędu
+          ansible.builtin.fail:
+            msg: "Test błędu"
+        
 
-    - name: Utworzenie katalogu na kopie zapasowe
-      ansible.builtin.file:
-        path: "{{ backup_root_dir }}"
-        state: directory
-        owner: root
-        group: root
-        mode: "0750"
+        - name: Zatrzymanie usługi AdGuard Home
+          ansible.builtin.service:
+            name: adguardhome
+            state: stopped
 
-    - name: Wykonanie kopii AdGuard Home
-      ansible.builtin.archive:
-        path:
-          - "{{ adguard_conf_dir }}"
-          - "{{ adguard_data_dir }}"
-        dest: "{{ backup_root_dir }}/{{ backup_file }}"
-        format: gz
-        owner: root
-        group: root
-        mode: "0600"
+        - name: Utworzenie katalogu na kopie zapasowe
+          ansible.builtin.file:
+            path: "{{ backup_root_dir }}"
+            state: directory
+            owner: root
+            group: root
+            mode: "0750"
 
-    - name: Uruchomienie usługi AdGuard Home
-      ansible.builtin.service:
-        name: adguardhome
-        state: started
+        - name: Wykonanie kopii AdGuard Home
+          ansible.builtin.archive:
+            path:
+              - "{{ adguard_conf_dir }}"
+              - "{{ adguard_data_dir }}"
+            dest: "{{ backup_root_dir }}/{{ backup_file }}"
+            format: gz
+            owner: root
+            group: root
+            mode: "0600"
 
-    - name: Informacja o zakończeniu backupu
-      ansible.builtin.debug:
-        msg: |
-          Backup AdGuard Home zakończony sukcesem
-          Plik: {{ backup_root_dir }}/{{ backup_file }}
+        - name: Uruchomienie usługi AdGuard Home
+          ansible.builtin.service:
+            name: adguardhome
+            state: started
+
+        - name: Informacja o zakończeniu backupu
+          ansible.builtin.debug:
+            msg: |
+              Backup AdGuard Home zakończony sukcesem
+              Plik: {{ backup_root_dir }}/{{ backup_file }}
+
+        - name: Powiadomienie discord
+          community.general.discord:
+            webhook_id: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              36373765306166323666356238313061636363393330303531336631393666343632633261653761
+              6335383761343235666437373264626264343435616665310a646130623064663533336634316632
+              37363162663062373639383964623565633434643531303633613934663632376535666339646537
+              3164333939303337650a303264363732343039393431656136376339656335653332613632636465
+              35393938653838623961303937343262633664363466353636613531376236396634
+            webhook_token: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              65333530306332316434636432653538623536613063663863656238623537363530643335306333
+              3232336137653366333933363666386164656530333665610a383566323831316437383264393934
+              61613831373162376335393438316435663432616536643433346139666130313132343234323564
+              6231396436613738330a373462616439353332666662356662366633346231653364323638353033
+              39643537343363643165396461323961363863323436306530626265343434333333336464393661
+              62626339303836366532363264353131323132626136323631333134353565666239316333613135
+              62343263613137653834653764306430353039316539316633383662343766636233646138386130
+              32323861656165306365
+            username: Semaphore
+            content: "Kopia AdGuarda zrobiona!!!!!!"
+
+      rescue:
+        - name: Powiadomienie o błędzie discord
+          community.general.discord:
+            webhook_id: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              36373765306166323666356238313061636363393330303531336631393666343632633261653761
+              6335383761343235666437373264626264343435616665310a646130623064663533336634316632
+              37363162663062373639383964623565633434643531303633613934663632376535666339646537
+              3164333939303337650a303264363732343039393431656136376339656335653332613632636465
+              35393938653838623961303937343262633664363466353636613531376236396634
+            webhook_token: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              65333530306332316434636432653538623536613063663863656238623537363530643335306333
+              3232336137653366333933363666386164656530333665610a383566323831316437383264393934
+              61613831373162376335393438316435663432616536643433346139666130313132343234323564
+              6231396436613738330a373462616439353332666662356662366633346231653364323638353033
+              39643537343363643165396461323961363863323436306530626265343434333333336464393661
+              62626339303836366532363264353131323132626136323631333134353565666239316333613135
+              62343263613137653834653764306430353039316539316633383662343766636233646138386130
+              32323861656165306365
+            username: Semaphore
+            content: "Błąd podczas tworzenia kopii!!!!"
