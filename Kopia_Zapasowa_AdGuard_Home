@@ -27,8 +27,6 @@
           ansible.builtin.file:
             path: "{{ backup_root_dir }}"
             state: directory
-            owner: root
-            group: root
             mode: "0750"
 
         - name: Wykonanie kopii AdGuard Home
@@ -38,14 +36,16 @@
               - "{{ adguard_data_dir }}"
             dest: "{{ backup_root_dir }}/{{ backup_file }}"
             format: gz
-            owner: root
-            group: root
             mode: "0600"
 
         - name: Uruchomienie usługi AdGuard Home
           ansible.builtin.service:
             name: adguardhome
             state: started
+
+        - name: Zapamiętanie ścieżki backupu
+          ansible.builtin.set_fact:
+            adguard_backup_path: "{{ backup_root_dir }}/{{ backup_file }}"
 
         - name: Informacja o zakończeniu backupu
           ansible.builtin.debug:
@@ -97,3 +97,104 @@
               32323861656165306365
             username: Semaphore
             content: "Błąd podczas tworzenia kopii!!!!"
+
+
+
+- name: Przywracanie AdGuard Home
+  hosts: Debian_Ilski_Test
+  become: yes
+  gather_facts: yes
+
+  vars:
+    adguard_base_dir: /opt/AdGuardHome
+    adguard_service_name: adguardhome
+
+  tasks:
+    block:
+
+      - name: Utworzenie katalogu tymczasowego
+        ansible.builtin.file:
+          path: /tmp/adguard_restore
+          state: directory
+          mode: "0755"
+
+      - name: Skopiowanie backupu z serwera źródłowego
+        ansible.builtin.fetch:
+          src: "{{ hostvars[groups['adguard_source'][0]].adguard_backup_path }}"
+          dest: /tmp/adguard_restore/
+          flat: yes
+        delegate_to: "{{ groups['adguard_source'][0] }}"
+
+      - name: Zatrzymanie AdGuard Home na serwerze docelowym
+        ansible.builtin.service:
+          name: "{{ adguard_service_name }}"
+          state: stopped
+        failed_when: false
+
+      - name: Przywrócenie danych z backupu
+        ansible.builtin.unarchive:
+          src: "/tmp/adguard_restore/{{ hostvars[groups['adguard_source'][0]].backup_file | default(lookup('fileglob','/tmp/adguard_restore/*.tar.gz')) }}"
+          dest: /
+          remote_src: yes
+
+      - name: Ustawienie właściciela plików
+        ansible.builtin.file:
+          path: "{{ adguard_base_dir }}"
+          owner: root
+          group: root
+          recurse: yes
+
+      - name: Uruchomienie AdGuard Home
+        ansible.builtin.service:
+          name: "{{ adguard_service_name }}"
+          state: started
+
+      - name: Powiadomienie discord
+        community.general.discord:
+          webhook_id: !vault |
+            $ANSIBLE_VAULT;1.1;AES256
+            36373765306166323666356238313061636363393330303531336631393666343632633261653761
+            6335383761343235666437373264626264343435616665310a646130623064663533336634316632
+            37363162663062373639383964623565633434643531303633613934663632376535666339646537
+            3164333939303337650a303264363732343039393431656136376339656335653332613632636465
+            35393938653838623961303937343262633664363466353636613531376236396634
+          webhook_token: !vault |
+            $ANSIBLE_VAULT;1.1;AES256
+            65333530306332316434636432653538623536613063663863656238623537363530643335306333
+            3232336137653366333933363666386164656530333665610a383566323831316437383264393934
+            61613831373162376335393438316435663432616536643433346139666130313132343234323564
+            6231396436613738330a373462616439353332666662356662366633346231653364323638353033
+            39643537343363643165396461323961363863323436306530626265343434333333336464393661
+            62626339303836366532363264353131323132626136323631333134353565666239316333613135
+            62343263613137653834653764306430353039316539316633383662343766636233646138386130
+            32323861656165306365
+          username: Semaphore
+          content: "Kopia AdGuarda przywrócowna na testowym systemie!!!!!!"
+
+      - name: Informacja o zakończeniu restore
+        ansible.builtin.debug:
+          msg: "✅ Backup wykonany i przywrócony na serwerze docelowym"
+    
+
+    rescue:
+      - name: Powiadomienie o błędzie discord
+        community.general.discord:
+          webhook_id: !vault |
+            $ANSIBLE_VAULT;1.1;AES256
+            36373765306166323666356238313061636363393330303531336631393666343632633261653761
+            6335383761343235666437373264626264343435616665310a646130623064663533336634316632
+            37363162663062373639383964623565633434643531303633613934663632376535666339646537
+            3164333939303337650a303264363732343039393431656136376339656335653332613632636465
+            35393938653838623961303937343262633664363466353636613531376236396634
+          webhook_token: !vault |
+            $ANSIBLE_VAULT;1.1;AES256
+            65333530306332316434636432653538623536613063663863656238623537363530643335306333
+            3232336137653366333933363666386164656530333665610a383566323831316437383264393934
+            61613831373162376335393438316435663432616536643433346139666130313132343234323564
+            6231396436613738330a373462616439353332666662356662366633346231653364323638353033
+            39643537343363643165396461323961363863323436306530626265343434333333336464393661
+            62626339303836366532363264353131323132626136323631333134353565666239316333613135
+            62343263613137653834653764306430353039316539316633383662343766636233646138386130
+            32323861656165306365
+          username: Semaphore
+          content: "Błąd podczas przywracania kopii!!!!"
