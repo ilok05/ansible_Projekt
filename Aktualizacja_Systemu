@@ -1,0 +1,13 @@
+---
+- name: Aktualizacja Systemu operacyjnego
+  hosts: AGH_Ilski
+  become: yes
+  gather_facts: yes 
+
+  tasks:
+    - name: Wykonanie bezpiecznej aktualizacji wszystkich pakietów
+      ansible.builtin.apt:
+        upgrade: safe
+        autoremove: yes
+        autoclean: yes
+        dpkg_options: "force-confdef,force-confold"
