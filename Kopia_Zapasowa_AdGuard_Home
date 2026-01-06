@@ -1,0 +1,51 @@
+---
+- name: Kopia zapasowa AdGuard Home
+  hosts: AGH_Ilski
+  become: yes
+  gather_facts: yes
+
+  vars:
+    adguard_base_dir: /opt/AdGuardHome
+    adguard_conf_dir: /opt/AdGuardHome/conf
+    adguard_data_dir: /opt/AdGuardHome/data
+
+    backup_root_dir: /var/backups/adguardhome
+    backup_timestamp: "{{ ansible_date_time.iso8601_basic }}"
+    backup_file: "adguardhome-backup-{{ inventory_hostname }}-{{ backup_timestamp }}.tar.gz"
+
+  tasks:
+
+    - name: Zatrzymanie usługi AdGuard Home
+      ansible.builtin.service:
+        name: AdGuardHome
+        state: stopped
+
+    - name: Utworzenie katalogu na kopie zapasowe
+      ansible.builtin.file:
+        path: "{{ backup_root_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Wykonanie kopii AdGuard Home
+      ansible.builtin.archive:
+        path:
+          - "{{ adguard_conf_dir }}"
+          - "{{ adguard_data_dir }}"
+        dest: "{{ backup_root_dir }}/{{ backup_file }}"
+        format: gz
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Uruchomienie usługi AdGuard Home
+      ansible.builtin.service:
+        name: AdGuardHome
+        state: started
+
+    - name: Informacja o zakończeniu backupu
+      ansible.builtin.debug:
+        msg: |
+          Backup AdGuard Home zakończony sukcesem
+          Plik: {{ backup_root_dir }}/{{ backup_file }}
