@@ -104,7 +104,7 @@
 
 
 - name: Przywracanie AdGuard Home z kopii zapasowej
-  hosts: Debian_Ilski
+  hosts: Debian_Ilski_Test
   become: yes
   gather_facts: yes
 
