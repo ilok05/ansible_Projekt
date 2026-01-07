@@ -120,7 +120,7 @@
 
     - name: Skopiowanie kopii zapasowej na host docelowy
       ansible.builtin.copy:
-        src: "/tmp/backups/{{ source_host }}/{{ backup_file }}"
+        src: "/tmp/backups/{{ inventory_hostname }}/{{ backup_file }}"
         dest: "{{ backup_root_dir }}/{{ backup_file }}" 
 
     - name: Blok przywracania AdGuard Home
