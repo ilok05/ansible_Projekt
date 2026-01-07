@@ -169,7 +169,7 @@
               62343263613137653834653764306430353039316539316633383662343766636233646138386130
               32323861656165306365
             username: Semaphore
-            content: "Kopia AdGuarda zrobiona!!!!!!"
+            content: "Kopia AdGuarda Przywrócona!!!!!!"
 
       rescue:
         - name: Powiadomienie o błędzie discord
@@ -192,4 +192,4 @@
               62343263613137653834653764306430353039316539316633383662343766636233646138386130
               32323861656165306365
             username: Semaphore
-            content: "Błąd podczas tworzenia kopii!!!!"
+            content: "Błąd podczas przywracania kopii!!!!"
