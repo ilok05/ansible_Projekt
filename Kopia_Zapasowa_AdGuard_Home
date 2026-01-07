@@ -13,9 +13,6 @@
   tasks:
     - name: Kopia_Zapasowa_AdGuardHome
       block:
-        - name: Wymuszenie błędu
-          ansible.builtin.fail:
-            msg: test błędu  
 
         - name: Zatrzymanie usługi AdGuard Home
           ansible.builtin.service:
