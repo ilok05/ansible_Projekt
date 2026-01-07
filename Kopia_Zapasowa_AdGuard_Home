@@ -150,7 +150,7 @@
             state: started
 
         - name: Powiadomienie discord o przywruceniu kopii
-          community.general.discord:
+          community.general.uri:
             webhook_id: !vault |
               $ANSIBLE_VAULT;1.1;AES256
               36373765306166323666356238313061636363393330303531336631393666343632633261653761
@@ -173,7 +173,7 @@
 
       rescue:
         - name: Powiadomienie o błędzie przywrucenia kopii discord
-          community.general.discord:
+          community.general.uri:
             webhook_id: !vault |
               $ANSIBLE_VAULT;1.1;AES256
               36373765306166323666356238313061636363393330303531336631393666343632633261653761
