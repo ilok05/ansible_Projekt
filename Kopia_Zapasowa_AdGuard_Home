@@ -52,7 +52,7 @@
               Backup AdGuard Home zakończony sukcesem
               Plik: {{ backup_root_dir }}/{{ backup_file }}
 
-        - name: Powiadomienie discord
+        - name: Powiadomienie discord o stworzeniu kopi
           community.general.discord:
             webhook_id: !vault |
               $ANSIBLE_VAULT;1.1;AES256
@@ -75,7 +75,7 @@
             content: "Kopia AdGuarda zrobiona!!!!!!"
 
       rescue:
-        - name: Powiadomienie o błędzie discord
+        - name: Powiadomienie o błędzie stworzenia kopii discord
           community.general.discord:
             webhook_id: !vault |
               $ANSIBLE_VAULT;1.1;AES256
@@ -149,7 +149,7 @@
             name: adguardhome
             state: started
 
-        - name: Powiadomienie discord
+        - name: Powiadomienie discord o przywruceniu kopii
           community.general.discord:
             webhook_id: !vault |
               $ANSIBLE_VAULT;1.1;AES256
@@ -172,7 +172,7 @@
             content: "Kopia AdGuarda Przywrócona!!!!!!"
 
       rescue:
-        - name: Powiadomienie o błędzie discord
+        - name: Powiadomienie o błędzie przywrucenia kopii discord
           community.general.discord:
             webhook_id: !vault |
               $ANSIBLE_VAULT;1.1;AES256
