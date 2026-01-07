@@ -111,20 +111,22 @@
     source_host: AGH_Ilski
 
   tasks:
-    - name: Pobranie kopii zapasowej z hosta źródłowego na kontroler
-      ansible.builtin.fetch:
-        src: "{{ backup_root_dir }}/{{ backup_file }}"
-        dest: "/tmp/backups/{{ inventory_hostname }}/"
-        flat: yes
-      delegate_to: "{{ source_host }}"
-
-    - name: Skopiowanie kopii zapasowej na host docelowy
-      ansible.builtin.copy:
-        src: "/tmp/backups/{{ inventory_hostname }}/{{ backup_file }}"
-        dest: "{{ backup_root_dir }}/{{ backup_file }}" 
+    
 
     - name: Blok przywracania AdGuard Home
       block:
+        - name: Pobranie kopii zapasowej z hosta źródłowego na kontroler
+          ansible.builtin.fetch:
+            src: "{{ backup_root_dir }}/{{ backup_file }}"
+            dest: "/tmp/backups/{{ inventory_hostname }}/"
+            flat: yes
+          delegate_to: "{{ source_host }}"
+
+        - name: Skopiowanie kopii zapasowej na host docelowy
+          ansible.builtin.copy:
+            src: "/tmp/backups/{{ inventory_hostname }}/{{ backup_file }}"
+            dest: "{{ backup_root_dir }}/{{ backup_file }}" 
+            
         - name: Zatrzymanie usługi AdGuard Home na hoście docelowym
           ansible.builtin.service:
             name: adguardhome
