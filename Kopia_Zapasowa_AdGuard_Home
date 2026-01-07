@@ -115,6 +115,12 @@
 
     - name: Blok przywracania AdGuard Home
       block:
+        - name: Utworzenie katalogu docelowego dla kopii zapasowej
+          ansible.builtin.file:
+            path: "{{ backup_root_dir }}"
+            state: directory
+            mode: "0750"
+
         - name: Pobranie kopii zapasowej z hosta źródłowego na kontroler
           ansible.builtin.fetch:
             src: "{{ backup_root_dir }}/{{ backup_file }}"
@@ -131,13 +137,7 @@
           ansible.builtin.service:
             name: adguardhome
             state: stopped
-
-        - name: Utworzenie katalogu docelowego dla kopii zapasowej
-          ansible.builtin.file:
-            path: "{{ backup_root_dir }}"
-            state: directory
-            mode: "0750"
-
+        
         - name: Rozpakowanie kopii zapasowej
           ansible.builtin.unarchive:
             src: "{{ backup_root_dir }}/{{ backup_file }}"
