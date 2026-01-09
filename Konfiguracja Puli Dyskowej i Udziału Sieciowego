@@ -1,0 +1,57 @@
+---
+- name: Playbook 4 
+  hosts: WINSRV_Ilski_P
+
+  tasks:
+  - name: PulaDyskowa, Tiering, wirtualny Dysk i System Plików
+    ansible.windows.win_powershell:
+      script: |
+        Get-PhysicalDisk | Select-Object -Index 1 | Set-PhysicalDisk -NewFriendlyname dysk1 -MediaType HDD 
+        Get-PhysicalDisk | Select-Object -Index 2 | Set-PhysicalDisk -NewFriendlyname dysk2 -MediaType HDD
+        Get-PhysicalDisk | Select-Object -Index 3 | Set-PhysicalDisk -NewFriendlyname dysk3 -MediaType SSD
+        Get-PhysicalDisk | Select-Object -Index 4 | Set-PhysicalDisk -NewFriendlyname dysk4 -MediaType SSD
+        $disks = Get-PhysicalDisk | Where-Object CanPool -eq $true
+        $subsystem = Get-StorageSubSystem | Select-Object -ExpandProperty FriendlyName
+        New-StoragePool -FriendlyName "Pula_Ansible" -StorageSubsystemFriendlyName $subsystem -PhysicalDisks $disks
+        $pool = Get-StoragePool -FriendlyName "Pula_Ansible"
+        $ssdDisks = $pool | Get-PhysicalDisk | Where-Object MediaType -eq "SSD"
+        $hddDisks = $pool | Get-PhysicalDisk | Where-Object MediaType -eq "HDD"
+        New-StorageTier -StoragePoolFriendlyName $pool.FriendlyName -FriendlyName "FastTier" -MediaType SSD -ResiliencySettingName Mirror -PhysicalDiskRedundancy 1
+        New-StorageTier -StoragePoolFriendlyName $pool.FriendlyName -FriendlyName "CapacityTier" -MediaType HDD -ResiliencySettingName Mirror -PhysicalDiskRedundancy 1
+        $ssdTier = Get-StorageTier -FriendlyName "FastTier"
+        $hddTier = Get-StorageTier -FriendlyName "CapacityTier"
+        $ssdTierSize = ($ssdTier | Get-StorageTierSupportedSize -ResiliencySettingName Mirror).TierSizeMax
+        $hddTierSize = ($hddTier | Get-StorageTierSupportedSize -ResiliencySettingName Mirror).TierSizeMax
+        New-VirtualDisk -StoragePoolFriendlyName "Pula_Ansible" -FriendlyName "VD_Ansible" -StorageTiers @($ssdTier, $hddTier) -StorageTierSizes @($ssdTierSize, $hddTierSize) -ResiliencySettingName Mirror -ProvisioningType Thin
+        Get-VirtualDisk -FriendlyName "VD_Ansible" | Get-Disk | Initialize-Disk -PartitionStyle GPT -PassThru | New-Partition -DriveLetter F -UseMaximumSize | Format-Volume -FileSystem ReFS -Force
+
+  - name: Zarządzanie Użytkownikami i Udziałem Sieciowym, Instalacja aplikacji 7zip, dig, FireFox, Dodanie Wpisu do Rejestru
+    ansible.windows.win_powershell:
+      script: |
+        New-LocalGroup -Name "Kierownicy_Ilski"
+        $users = @(@{Name = "mromanek"; FullName = "Marek Romanek"}, @{Name = "jgula"; FullName = "Jacek Gula"})
+        foreach ($u in $users){
+          $Password = ConvertTo-SecureString "Zaq12wsx" -AsPlainText -Force
+          New-LocalUser -Name $u.Name -Password $Password -FullName $u.FullName
+          Enable-LocalUser -Name $u.Name
+          Add-LocalGroupMember -Group "Kierownicy_Ilski" -Member $u.Name
+          Add-LocalGroupMember -Group "Users" -Member $u.Name
+        }
+        New-Item -Path "F:\Projekty" -ItemType Directory
+        New-SmbShare -Name "Projekty_Ilski" -Path "F:\Projekty"
+        Grant-SmbShareAccess -Name "Projekty_Ilski" -AccountName "Administrators","Kierownicy_Ilski" -AccessRight Full -Force
+        Revoke-SmbShareAccess -Name "Projekty_Ilski" -AccountName "Everyone" -Force
+        icacls "F:\Projekty" /inheritance:r
+        icacls "F:\Projekty" /remove "Users" "Authenticated Users" "Everyone"
+        icacls "F:\Projekty" /grant "Administrators:(OI)(CI)F"
+        icacls "F:\Projekty" /grant "Kierownicy_Ilski:(OI)(CI)F"
+        winget install 7zip.7zip --accept-package-agreements --accept-source-agreements --silent
+        winget install ISC.Bind --accept-package-agreements --accept-source-agreements --silent
+        winget install Mozilla.Firefox.pl --accept-package-agreements --accept-source-agreements --silent
+        New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" -Force | Out-Null
+        New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Printers" -Name "DisableDeletePrinter" -PropertyType DWord -Value 1 -Force
+
+
+
+        
+       
