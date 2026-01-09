@@ -1,17 +1,21 @@
 ---
-- name: Aktualizacja systemu operacyjnego
+---
+- name: Aktualizacja Systemu operacyjnego
   hosts: AGH_Ilski
   become: yes
-  gather_facts: yes
+  gather_facts: yes 
 
   tasks:
-    - name: Aktualizacja cache APT i pełna aktualizacja systemu
-      ansible.builtin.apt:
-        update_cache: yes
-        upgrade: full
-        autoremove: yes
-        autoclean: yes
-        dpkg_options: "force-confdef,force-confold"
+    - name: Aktualizacja Systemu
+      block:
+  
+        - name: Wykonanie bezpiecznej aktualizacji wszystkich pakietów
+          ansible.builtin.apt:
+            update_cache: yes
+            upgrade: safe
+            autoremove: yes
+            autoclean: yes
+            dpkg_options: "force-confdef,force-confold"
     
         - name: Powiadomienie discord
           community.general.discord:
