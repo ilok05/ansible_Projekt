@@ -1,0 +1,180 @@
+- name: Konfiguracja LVM
+  hosts: AGH_Ilski
+  become: true
+  gather_facts: true
+  collections:
+    - community.general
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/sbin:/usr/sbin"
+
+  tasks:
+    - name: Zainstaluj pakiety lvm2
+      ansible.builtin.package:
+        name:
+          - lvm2
+        state: present
+
+    - name: Tworzymy grupe woluminow
+      community.general.lvg:
+        vg: adg_vg
+        pvs:
+          - /dev/sda
+          - /dev/sdb
+        state: present
+
+    - name: Odmontuj istniejący LV jeśli istnieje
+      ansible.builtin.mount:
+        path: /adguardhome
+        state: absent
+
+    - name: Usuń istniejący LV jeśli istnieje
+      community.general.lvol:
+        vg: adg_vg
+        lv: adg_lv
+        state: absent
+        force: true
+
+    - name: Tworzymy wolumin logiczny z RAID1
+      community.general.lvol:
+        vg: adg_vg
+        lv: adg_lv
+        size: 100%VG
+        opts: "--type raid1 -m 1"
+        state: present
+
+    - name: Tworzymy format
+      ansible.builtin.filesystem:
+        fstype: ext4
+        dev: /dev/adg_vg/adg_lv
+
+    - name: Tworzymy miejsce monatzu
+      ansible.builtin.file:
+        path: /adguardhome
+        state: directory
+
+    - name: Montaz 
+      ansible.builtin.mount:
+        path: /adguardhome
+        src: /dev/adg_vg/adg_lv
+        fstype: ext4
+        state: mounted
+        opts: defaults
+
+- name: Instalacja Oprogramowania AdGuard Home
+  hosts: AGH_Ilski
+  become: true
+  vars:
+    install_dir: "/adguardhome"
+    download_url: "https://github.com/AdguardTeam/AdGuardHome/releases/download/v0.107.71/AdGuardHome_linux_amd64.tar.gz"
+
+  tasks:
+
+    - name: Zainstaluj wymagane pakiety (curl, tar)
+      ansible.builtin.package:
+        name:
+          - curl
+          - tar
+        state: present
+
+    - name: Pobierz AdGuard Home z GitHub
+      ansible.builtin.get_url:
+        url: "{{ download_url }}"
+        dest: "/tmp/AdGuardHome.tar.gz"
+        mode: '0644'
+
+    - name: Rozpakuj AdGuard Home do katalogu /adguardhome
+      ansible.builtin.unarchive:
+        src: "/tmp/AdGuardHome.tar.gz"
+        dest: "{{ install_dir }}"
+        remote_src: yes
+        creates: "{{ install_dir }}/AdGuardHome"
+
+    - name: Ustaw prawa do pliku wykonywalnego
+      ansible.builtin.file:
+        path: "{{ install_dir }}/AdGuardHome/AdGuardHome"
+        state: file
+        mode: '0755'
+
+    - name: Utwórz systemd service dla AdGuard Home
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/adguardhome.service
+        content: |
+          [Unit]
+          Description=AdGuard Home
+          After=network.target
+
+          [Service]
+          Type=simple
+          ExecStart={{ install_dir }}/AdGuardHome/AdGuardHome -s run -c {{ install_dir }}/AdGuardHome.yaml -w {{ install_dir }}
+          WorkingDirectory={{ install_dir }}
+          Restart=on-failure
+          User=root
+          Group=root
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Odśwież systemd i uruchom serwis AdGuard Home
+      ansible.builtin.systemd:
+        daemon_reload: yes
+        name: adguardhome
+        enabled: yes
+        state: started
+
+
+- name: Konfiguracja zapory ogniowej UFW – SSH + ADGuard Home
+  hosts: AGH_Ilski
+  become: true
+
+  vars:
+    ssh_port: 22
+    adguard_dns_port: 53
+    adguard_web_port: 3000
+
+  tasks:
+    - name: Instalacja UFW
+      apt:
+        name: ufw
+        state: present
+        update_cache: true
+
+    - name: Ustawienie domyślnej polityki – blokuj ruch przychodzący
+      ufw:
+        direction: incoming
+        policy: deny
+
+    - name: Ustawienie domyślnej polityki – zezwól na ruch wychodzący
+      ufw:
+        direction: outgoing
+        policy: allow
+
+    - name: Zezwolenie na SSH
+      ufw:
+        rule: allow
+        port: "{{ ssh_port }}"
+        proto: tcp
+
+    - name: Zezwolenie na DNS (TCP) – ADGuard Home
+      ufw:
+        rule: allow
+        port: "{{ adguard_dns_port }}"
+        proto: tcp
+
+    - name: Zezwolenie na DNS (UDP) – ADGuard Home
+      ufw:
+        rule: allow
+        port: "{{ adguard_dns_port }}"
+        proto: udp
+
+    - name: Zezwolenie na panel WWW ADGuard Home
+      ufw:
+        rule: allow
+        port: "{{ adguard_web_port }}"
+        proto: tcp
+
+    - name: Włączenie UFW i uruchamianie przy starcie systemu
+      ufw:
+        state: enabled
