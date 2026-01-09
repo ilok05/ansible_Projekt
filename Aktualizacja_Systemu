@@ -1,5 +1,11 @@
 ---
-- name: Aktualizacja cache APT i pełna aktualizacja systemu
+- name: Aktualizacja systemu operacyjnego
+  hosts: AGH_Ilski
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Aktualizacja cache APT i pełna aktualizacja systemu
       ansible.builtin.apt:
         update_cache: yes
         upgrade: full
