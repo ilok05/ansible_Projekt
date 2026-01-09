@@ -1,0 +1,22 @@
+serwery:
+  children:
+    serweryweb:
+      hosts:
+        AGH_Ilski:
+          ansible_host: 192.168.131.4
+          ansible_connection: ssh
+          ansible_ssh_user: user
+          ansible_ssh_pass: Zaq12wsx
+        Debian_Ilski_Test:
+          ansible_host: 192.168.131.8
+          ansible_connection: ssh
+          ansible_ssh_user: user
+          ansible_ssh_pass: Zaq12wsx
+    lokalnyserwer:
+      hosts:
+        WINSRV_Ilski_P:
+          ansible_host: 192.168.131.3
+          ansible_connection: ssh
+          ansible_ssh_user: "Administrator"
+          ansible_ssh_pass: "Zaq12wsx"
+          ansible_shell_type: powershell
